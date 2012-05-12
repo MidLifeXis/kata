@@ -1,0 +1,23 @@
+kata
+
+Projects for practicing skills and techniques in different languages
+
+* Overview
+
+  In /Clean Coder/ it is suggested to practice your craft (and what
+  you do at work does not count).  This is an archive of my practice
+  code and projects that I use or collect over time for this process.
+
+* Directory Structure
+
+  - README.org: This file.
+  - PROJECTA: Directory containing project A.
+    + PROJECTA.org: Description file for PROJECTA.  Contains notes,
+      references, suggested reading, state of the current
+      implementation, and so on.
+    + lang1: Implementation of PROJECTA in the lang1 language.
+  - lib: Library files used throughout the projects (for example, a
+    common unit testing framework).
+  - bin: Common scripts used throughout the projects.
+
+* End of File
