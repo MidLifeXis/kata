@@ -26,4 +26,3 @@ Projects for practicing skills and techniques in different languages
   - [[mailto:MidLifeXis-kata@wightmanfam.org?subject%3Demail%2520query%2520from%2520github%2520archive][MidLifeXis-kata@wightmanfam.org]]
   - [[http://www.perlmonks.org/?node%3DMidLifeXis][MidLifeXis at PerlMonks]]
   
-* End of File
