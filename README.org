@@ -11,14 +11,19 @@ Projects for practicing skills and techniques in different languages
 * Directory Structure
 
   - README.org: This file.
-  - PROJECTA: Directory containing project A.
-    + PROJECTA.org: Description file for PROJECTA.  Contains notes,
-      references, suggested reading, state of the current
-      implementation, and so on.
-    + lang1: Implementation of PROJECTA in the lang1 language.
-  - lib: Library files used throughout the projects (for example, a
-    common unit testing framework).
-  - bin: Common scripts used throughout the projects.
+  - projects:
+    + PROJECTA: Directory containing project A.
+      * PROJECTA.org: Description file for PROJECTA.  Contains notes,
+        references, suggested reading, state of the current
+        implementation, and so on.
+      * lang1: Implementation of PROJECTA in the lang1 language.
+  - tools: Directory containing tools
+    + common:
+      * lib: Library files used throughout the projects (for example, a
+        common unit testing framework).
+      * bin: Common scripts used throughout the projects.
+      * other directories as necessary
+    + lang1: Language specific tools for lang1.
 
 * Contact Information
 
