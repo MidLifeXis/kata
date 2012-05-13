@@ -1,0 +1,131 @@
+* Project Name
+
+  Bowling Game Scorer
+
+* Purpose
+
+  The purpose of this project was originally to learn how to write
+  unit tests and write code in a TDD manner.
+
+* Language Choice
+
+  Since the majority of my coding work was in Perl, I chose Perl as
+  the language in which I would implement this project.
+
+  As time goes on, I will be using this project to learn other
+  languages as well.
+
+* Project Description
+
+  Create a bowling game scoring application for standard 10-pin
+  bowling rules.
+
+  - A game consists of 9 standard frames and one special frame.
+    + A standard frame allows up to two rolls to knock down a total of
+      10 pins.
+    + A special frame allows up to two rolls to knock down a total of
+      10 pins, with the possibility of awarding one or two bonus rolls.
+      * A single bonus roll is awarded if all 10 pins are knocked down
+        in the first two rolls.
+      * Two bonus rolls are awarded if all 10 pins are knocked down in
+        the first roll.
+      * After each set of 10 pins is knocked down, a new set of 10
+        pins is placed.
+      * The special frame is the last frame of the game.
+    + After each frame is completed, any remaining pins are removed
+      and a new set of 10 pins is placed.
+  - Scoring
+    + A scorecard looks similar to:
+      #+begin_src text
+ 
+  | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10  |
+  +---+---+---+---+---+---+---+---+---+-----+
+  |A|B|A|B|A|B|A|B|A|B|A|B|A|B|A|B|A|B|D|E|F| 
+  | +-| +-| +-| +-| +-| +-| +-| +-| +-|-+-+-|
+  | C | C | C | C | C | C | C | C | C | C   |
+  +---+---+---+---+---+---+---+---+---+-----+
+
+      #+end_src
+    + If all pins are knocked down on the first roll of a standard
+      frame, or after a new set of pins are placed in a special frame,
+      it is recorded as a =strike=.
+      * An =X= is used to designate a strike on the scorecard.
+      * A strike is recorded for a standard frame in the location
+        marked as =B= in the scorecard corresponding to the correct
+        frame, or in the locations designated by =D=, =E=, or =F= in
+        the special frame.
+      * the location marked as =A= would remain empty.
+    + If all remaining pins are knocked down on the second roll of a
+      standard frame, or after a new set of pins are placed in a
+      special frame, it is recorded as a =spare=.
+      * A =/= is used to designate a spare on the scorecard.
+      * A spare is recorded in the location marked as =B= in the
+        scorecard in a standard frame, or in the leftmost empty cell
+        of =E= or =F= in the special frame.
+      * The location marked as =A=, =D=, or =E= would contain the
+        number of pins knocked down by the first roll of the spare.
+    + In all other cases, the number of pins knocked down in a single
+      roll is recorded.
+      * The score is recorded in cells =A=, =B=, =D=, =E=, or =F=,
+        depending on which roll of the frame the roll corresponds to.
+    + If a standard frame ends on a strike or a spare, it is called a
+      =closed frame=, otherwise it is called an =open frame=.
+    + The location marked as =C= contains the total score for the game
+      as of the frame the score is recorded in.
+      * A frame adds its score to the previous frame score.
+      * A strike in a standard frame is scored by adding the next two
+        rolls to to 10 pins counted for the strike.  For example, a
+        strike followed by rolls of =4= and =5= would give a frame
+        score of =19= (=10 + 4 + 5=).
+      * A spare in a standard frame is scored by adding the next roll
+        to the 10 pins counted for the spare.  For example, a spare
+        followed by a roll of =4= would give a frame score of =14=
+        (=10 + 4=).
+      * A strike or spare in the final special frame just gives the
+        bonus rolls to be added into the frame score.
+      * An =open frame= is scored by adding the number of pins knocked
+        down with both rolls.
+    + Examples:
+      * The partial game =1,2,3,4,5,5,9,1,10,10,3= is scored as:
+        #+begin_src text
+ 
+    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10  |
+    +---+---+---+---+---+---+---+---+---+-----+
+    |1|2|3|4|5|/|9|/| |X| |X|3| | | | | | | | | 
+    | +-| +-| +-| +-| +-| +-| +-| +-| +-|-+-+-|
+    |  3| 10| 29| 49| 72|   |   |   |   |     |
+    +---+---+---+---+---+---+---+---+---+-----+
+
+        #+end_src
+
+        You cannot complete the frame score for frame 6 because two
+        rolls have not been completed after the strike.
+
+      * The rolls =1,2,3,4,5,5,9,1,10,3,4,2,3,5,4,6,4,10,2,8= are
+        scored as:
+        #+begin_src text
+ 
+    | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10  |
+    +---+---+---+---+---+---+---+---+---+-----+
+    |1|2|3|4|5|/|9|/| |X|3|4|2|3|5|4|6|/|X|2|/| 
+    | +-| +-| +-| +-| +-| +-| +-| +-| +-|-+-+-|
+    |  3| 10| 29| 49| 66| 73| 78| 87|107|  127|
+    +---+---+---+---+---+---+---+---+---+-----+
+
+        #+end_src
+
+  - Program Execution
+    + Prompt the user for a valid roll.
+      * The prompt must include the frame and roll number.
+      * If the roll is invalid, generate an error message and prompt the
+        user for a new roll.
+      * =x=, =X=, and from =0= to the total number of pins in a frame
+        are all valid input values for the first roll after pins have
+        been set.
+      * =/= and from =0= to the number of pins left in the frame are
+        valid values for the second roll after pins have been set.
+    + At the end of each frame, print a current scorecard.
+    + At the end of the game, prompt the user if they want to score
+      another game.
+
+* End of file
