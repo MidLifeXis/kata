@@ -25,5 +25,6 @@ Projects for practicing skills and techniques in different languages
   - Brian T. Wightman
   - [[mailto:MidLifeXis-kata@wightmanfam.org?subject%3Demail%20query%20from%20github%20archive][MidLifeXis-kata@wightmanfam.org]]
   - [[http://www.perlmonks.org/?node%3DMidLifeXis][MidLifeXis at PerlMonks]]
+  - [[http://codekata.pragprog.com/][Another code kata site]]
   
 * End of File                                                      :noexport:
