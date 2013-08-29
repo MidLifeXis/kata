@@ -1,0 +1,16 @@
+Various exercises and practices to warm up.
+
+* japh
+
+  Just Another Perl Hacker - Generate the string 
+#+BEGIN_SRC text
+Just another Perl hacker,
+#+END_SRC
+  to stdout, and it must be done in at most 4x80 (4x79) lines.
+  
+  See for more information:
+  - http://www.ibm.com/developerworks/linux/library/l-japh/index.html
+  - http://www.perlmonks.org/?node_id=412464
+  - http://perl.plover.com/obfuscated/solution.html
+
+* End of file
