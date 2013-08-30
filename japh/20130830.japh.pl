@@ -1,4 +1,4 @@
-# Cutting down a tree
+# Cutting down a tree - http://www.perlmonks.org/index.pl?node_id=1051644
 $t=t->p;$t->g;$t->f;sub t::p{@n=map{x($_)}'Just another Perl hacker,'=~m/(.)/g;
 bless{n=>\@n},$_[0]}sub t::g{$_[0]->{t}=$_[0]->f(0,$#{$_[0]->{n}});$_[0]->{n}=1
 ;$_[0]}sub t::f{($a,$b,$e)=@_;$m=int(($b+$e)/2);$f=$_[0]->{n}[$m];$l=$_[0]->f(
