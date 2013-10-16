@@ -49,8 +49,8 @@ sub get_reduced_alphabet {
 
     my @letters   = (0) x 26;
     
-    for ( split '', $choice ) {
-	$letters[ ord(uc $_) - ord( 'A' ) ]++;
+    for ( split '', uc($choice) ) {
+	$letters[ ord($_) - ord( 'A' ) ]++;
     }
 
     my @results = map { $alphabet->[$_] - $letters[$_] } ( 0 .. 25 );
