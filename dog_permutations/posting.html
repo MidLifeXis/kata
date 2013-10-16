@@ -38,7 +38,7 @@
       <tr class="monkquip">
         <td class="monkquip"
             valign="bottom" width="100%" >
-          Don't ask to ask, just ask
+          go ahead... be a heretic
         </td>
       </tr>
       <tr class="titlebar">
@@ -67,7 +67,7 @@
     <tr>
       <td valign="middle" class="titlechooser">
         <!-- superdoc title chooser(1) -->
-        <h3 class="other">Another word puzzle with too many permutations</h3><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Novice)</span></span>
+        <h3 class="other">Another word puzzle with too many permutations</h3><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span></span>
         <!-- /superdoc title chooser(1) -->
       </td>
       <td valign="top" align="right" class="monktitlebar">
@@ -147,8 +147,8 @@ Small lists can be done by hand with some trial and error but large lists presen
 I have a list of 100 dogs and I am given a list of letters that make up 10 of the dog names. I tried to create a process that would identify all of the potential permutations r(10) from n(100) but with 5.35983370e+20 permutations, a linear approach makes this virtually impossible.
 Still, I gave it shot using Math::Combinatorics to calculate permutations and added a filter to only output records that have the same amount of letters as the given pool (112):
 </p>
-<pre class="code"><div class='codeblock'><tt class='codetext'>A(8),B(2),C(5),8(D),7(E),F(1),G(3),H(9),I(8),K(1),L(9),M(1),N(12),O(13<span class="line-breaker">
-<font color="red">+</font></span>),P(1),Q(0),R(5),S(6),T(4),U(6),V(0),W(1),X(1),Y(0),Z(0)
+<pre class="code"><div class='codeblock'><tt class='codetext'>A(8),B(2),C(5),8(D),7(E),F(1),G(3),H(9),I(8),J(0),K(1),L(9),M(1),N(12)<span class="line-breaker">
+<font color="red">+</font></span>,O(13),P(1),Q(0),R(5),S(6),T(4),U(6),V(0),W(1),X(1),Y(0),Z(1)
 </tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058322;part=2">&#91;download&#93;</a></div></pre>
 
 <p>
@@ -232,23 +232,837 @@ sub find_some ( @choices, @alphabet ) {
 
 <p>You will be left with a spanning tree of all good solutions.  With a stack you could also remove the recursion.</p>
 <p>Update: Scope error</p>
+<p>Update 2: I have noticed a couple of minor logic errors as well, but they appear to be easy enough to correct.</p>
 
 <div class="pmsig"><div class="pmsig-272364">
 <p>--MidLifeXis</p>
 
 </div></div></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058326;node_id=3333">&#91;reply&#93;</a><br /><a href="?displaytype=displaycode;node_id=1058326">[d/l]</a></td></tr>
-<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058330'></a><ul class='indent'><a href="?node_id=1058330">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Novice)</span> on Oct 15, 2013 at 17:25&nbsp;UTC</span></ul></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058330'></a><ul class='indent'><a href="?node_id=1058330">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 17:25&nbsp;UTC</span></ul></td></tr>
 <tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'>I agree that I need to figure out some way to use the pool of letters in the process to detect when the list is going down a path that doesn't fit the solution. I will think about your pseudocode and see if I can come up with anything.
 
 Thank you.</ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058330;node_id=3333">&#91;reply&#93;</a></td></tr>
-<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058329'></a><a href="?node_id=1058329">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=992570">Laurent_R</a><span class="attribution-title"> (Chaplain)</span> on Oct 15, 2013 at 17:20&nbsp;UTC</span></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058337'></a><ul class='indent'><a href="?node_id=1058337">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=272364">MidLifeXis</a><span class="attribution-title"> (Prior)</span> on Oct 15, 2013 at 18:13&nbsp;UTC</span></ul></td></tr>
+<tr class='reply-body pmnote-272364' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><p>
+Working solution that generates the spanning tree.  Each returned value is a <tt class='inlinecode'>&#91; $item, $value, $alphabet &#93;</tt>.
+<div class='spoil_link'>&lt;<a href="?showspoiler=1058337-1;node_id=1058322">Reveal this spoiler</a> or all spoilers <a href="?showspoiler=1058337;node_id=1058322">in this node</a> or all <a href="?node_id=1058322;spoil=1">in this thread</a><!--
+
+<pre class="code"><div class='codeblock'><tt class='codetext'>use strict;
+use warnings;
+
+my @dogs = qw(
+
+Affenpinscher AfghanHound AiredaleTerrier Akita AlaskanMalamute
+AmericanEnglishCoonhound AmericanEskimoDog AmericanFoxhound Basenji
+BassetHound Beagle BeardedCollie Beauceron BlackandTanCoonhound
+Bloodhound BluetickCoonhound BorderCollie BorderTerrier Borzoi
+BostonTerrier BouvierdesFlandres Boxer BoykinSpaniel Briard Brittany
+BrusselsGriffon BullTerrier Bulldog Bullmastiff ChesapeakeBayRetriever
+Chihuahua ChineseCrested ChineseShar-Pei Chinook ChowChow
+ClumberSpaniel CockerSpaniel Collie Curly-CoatedRetriever Dachshund
+Dalmatian DandieDinmontTerrier DobermanPinscher DoguedeBordeaux
+EnglishCockerSpaniel EnglishFoxhound EnglishSetter
+EnglishSpringerSpaniel GermanPinscher GermanShepherdDog
+GermanShorthairedPointer GermanWirehairedPointer GiantSchnauzer
+GlenofImaalTerrier GoldenRetriever GordonSetter GreatDane Greyhound
+Harrier IbizanHound IcelandicSheepdog IrishSetter IrishTerrier Kuvasz
+LabradorRetriever LakelandTerrier LhasaApso Lowchen Maltese
+ManchesterTerrier Mastiff MiniatureBullTerrier MiniaturePinscher
+MiniatureSchnauzer NeapolitanMastiff Newfoundland NorfolkTerrier
+Pekingese PembrokeWelshCorgi PharaohHound Plott PortugueseWaterDog Pug
+Puli PyreneanShepherd RatTerrier ShibaInu ShihTzu SiberianHusky
+SilkyTerrier SkyeTerrier SmoothFoxTerrier SoftCoatedWheatenTerrier
+SpinoneItaliano St.Bernard StaffordshireBullTerrier WireFoxTerrier
+WirehairedPointingGriffon Xoloitzcuintli YorkshireTerrier
+
+);
+
+my $alphabet = &#39;A(8),B(2),C(5),8(D),7(E),F(1),G(3),H(9),I(8),K(1),L(9)<span class="line-breaker">
+<font color="red">+</font></span>,M(1),N(12),O(13),P(1),Q(0),R(5),S(6),T(4),U(6),V(0),W(1),X(1),Y(0),Z<span class="line-breaker">
+<font color="red">+</font></span>(0)&#39;;
+
+my @alphabet = (0) x 26;
+while ($alphabet =~ m/(&#91;A-Z&#93;)\((\d+)\)/g) {
+    $alphabet&#91; ord( $1 ) - ord( &#39;A&#39; ) &#93; = int($2);
+}
+
+use Data::Dumper;
+
+print Dumper( \@dogs, \@alphabet );
+
+sub get_reduced_alphabet {
+    my ( $choice, $alphabet ) = @_;
+
+    my @letters   = (0) x 26;
+    
+    for ( split &#39;&#39;, $choice ) {
+    $letters&#91; ord(uc $_) - ord( &#39;A&#39; ) &#93;++;
+    }
+
+    my @results = map { $alphabet-&gt;&#91;$_&#93; - $letters&#91;$_&#93; } ( 0 .. 25 );
+
+    if ( grep { $_ &lt; 0 } @results ) {
+    return;
+    }
+    else {
+    return &#91; @results &#93;;
+    }
+}    
+
+sub find_span {
+    my ( $choices, $alphabet ) = @_;
+
+    my $results = &#91;&#93;;
+    while (my $choice = shift @$choices ) {
+        if ( my $new_alphabet = get_reduced_alphabet( $choice, $alphab<span class="line-breaker">
+<font color="red">+</font></span>et ) ) {
+            push @$results, &#91; $choice, find_span( &#91; @$choices &#93;, $new_<span class="line-breaker">
+<font color="red">+</font></span>alphabet ), join( &#39;,&#39;, @$new_alphabet ) &#93;;
+        }
+    }
+    return $results;
+}
+
+my $results = find_span( &#91; @dogs &#93;, &#91; @alphabet &#93; );
+
+print Dumper( $results );
+
+</tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058337;part=2">&#91;download&#93;</a></div></pre>
+
+
+-->&gt;</div>
+
+and results
+
+<div class='spoil_link'>&lt;<a href="?showspoiler=1058337-2;node_id=1058322">Reveal this spoiler</a><!--
+
+<pre class="code"><div class='codeblock'><tt class='codetext'>$VAR1 = &#91;
+          &#91;
+            &#39;Akita&#39;,
+            &#91;
+              &#91;
+                &#39;Chihuahua&#39;,
+                &#91;
+                  &#91;
+                    &#39;LhasaApso&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;0,1,4,0,0,1,3,4,4,0,0,8,1,11,12,0,0,5,3,3,3,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;1,2,4,0,0,1,3,5,6,0,0,8,1,12,12,0,0,5,4,3,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;Plott&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;3,1,4,0,0,1,3,5,4,0,0,8,1,11,12,0,0,5,5,1,3,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;4,2,4,0,0,1,3,6,6,0,0,8,1,12,12,0,0,5,6,1,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;Pug&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;3,1,4,0,0,1,2,5,4,0,0,9,1,11,13,0,0,5,5,3,2,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;4,2,4,0,0,1,2,6,6,0,0,9,1,12,13,0,0,5,6,3,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;Puli&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;3,1,4,0,0,1,3,5,3,0,0,8,1,11,13,0,0,5,5,3,2,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;4,2,4,0,0,1,3,6,5,0,0,8,1,12,13,0,0,5,6,3,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;3,1,4,0,0,1,3,5,4,0,0,9,1,11,13,1,0,5,5,3,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;4,2,4,0,0,1,3,6,6,0,0,9,1,12,13,1,0,5,6,3,4,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;LhasaApso&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;2,1,5,0,0,1,3,7,5,0,0,8,1,11,12,0,0,5,3,3,5,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;3,2,5,0,0,1,3,8,7,0,0,8,1,12,12,0,0,5,4,3,6,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Plott&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;5,1,5,0,0,1,3,8,5,0,0,8,1,11,12,0,0,5,5,1,5,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;6,2,5,0,0,1,3,9,7,0,0,8,1,12,12,0,0,5,6,1,6,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Pug&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;5,1,5,0,0,1,2,8,5,0,0,9,1,11,13,0,0,5,5,3,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;6,2,5,0,0,1,2,9,7,0,0,9,1,12,13,0,0,5,6,3,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Puli&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;5,1,5,0,0,1,3,8,4,0,0,8,1,11,13,0,0,5,5,3,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;6,2,5,0,0,1,3,9,6,0,0,8,1,12,13,0,0,5,6,3,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;ShibaInu&#39;,
+                &#91;&#93;,
+                &#39;5,1,5,0,0,1,3,8,5,0,0,9,1,11,13,1,0,5,5,3,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;
+            &#93;,
+            &#39;6,2,5,0,0,1,3,9,7,0,0,9,1,12,13,1,0,5,6,3,6,0,1,1,0,0&#39;
+          &#93;,
+          &#91;
+            &#39;Chihuahua&#39;,
+            &#91;
+              &#91;
+                &#39;Chinook&#39;,
+                &#91;
+                  &#91;
+                    &#39;LhasaApso&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;2,1,3,0,0,1,3,3,4,0,0,8,1,10,10,0,0,5,3,4,3,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;3,2,3,0,0,1,3,4,6,0,0,8,1,11,10,0,0,5,4,4,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;Plott&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;5,1,3,0,0,1,3,4,4,0,0,8,1,10,10,0,0,5,5,2,3,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;6,2,3,0,0,1,3,5,6,0,0,8,1,11,10,0,0,5,6,2,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;Pug&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;5,1,3,0,0,1,2,4,4,0,0,9,1,10,11,0,0,5,5,4,2,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;6,2,3,0,0,1,2,5,6,0,0,9,1,11,11,0,0,5,6,4,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;Puli&#39;,
+                    &#91;
+                      &#91;
+                        &#39;ShibaInu&#39;,
+                        &#91;&#93;,
+                        &#39;5,1,3,0,0,1,3,4,3,0,0,8,1,10,11,0,0,5,5,4,2,0<span class="line-breaker">
+<font color="red">+</font></span>,1,1,0,0&#39;
+                      &#93;
+                    &#93;,
+                    &#39;6,2,3,0,0,1,3,5,5,0,0,8,1,11,11,0,0,5,6,4,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;,
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;5,1,3,0,0,1,3,4,4,0,0,9,1,10,11,1,0,5,5,4,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;6,2,3,0,0,1,3,5,6,0,0,9,1,11,11,1,0,5,6,4,4,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;LhasaApso&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;2,1,4,0,0,1,3,4,5,0,1,8,1,11,12,0,0,5,3,4,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;3,2,4,0,0,1,3,5,7,0,1,8,1,12,12,0,0,5,4,4,4,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Plott&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;5,1,4,0,0,1,3,5,5,0,1,8,1,11,12,0,0,5,5,2,3,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;6,2,4,0,0,1,3,6,7,0,1,8,1,12,12,0,0,5,6,2,4,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Pug&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;5,1,4,0,0,1,2,5,5,0,1,9,1,11,13,0,0,5,5,4,2,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;6,2,4,0,0,1,2,6,7,0,1,9,1,12,13,0,0,5,6,4,3,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Puli&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;5,1,4,0,0,1,3,5,4,0,1,8,1,11,13,0,0,5,5,4,2,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;6,2,4,0,0,1,3,6,6,0,1,8,1,12,13,0,0,5,6,4,3,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;ShibaInu&#39;,
+                &#91;&#93;,
+                &#39;5,1,4,0,0,1,3,5,5,0,1,9,1,11,13,1,0,5,5,4,3,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;
+            &#93;,
+            &#39;6,2,4,0,0,1,3,6,7,0,1,9,1,12,13,1,0,5,6,4,4,0,1,1,0,0&#39;
+          &#93;,
+          &#91;
+            &#39;Chinook&#39;,
+            &#91;
+              &#91;
+                &#39;LhasaApso&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;4,1,4,0,0,1,3,6,5,0,0,8,1,10,10,0,0,5,3,4,5,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;5,2,4,0,0,1,3,7,7,0,0,8,1,11,10,0,0,5,4,4,6,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Plott&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;7,1,4,0,0,1,3,7,5,0,0,8,1,10,10,0,0,5,5,2,5,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;8,2,4,0,0,1,3,8,7,0,0,8,1,11,10,0,0,5,6,2,6,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Pug&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;7,1,4,0,0,1,2,7,5,0,0,9,1,10,11,0,0,5,5,4,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;8,2,4,0,0,1,2,8,7,0,0,9,1,11,11,0,0,5,6,4,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;Puli&#39;,
+                &#91;
+                  &#91;
+                    &#39;ShibaInu&#39;,
+                    &#91;&#93;,
+                    &#39;7,1,4,0,0,1,3,7,4,0,0,8,1,10,11,0,0,5,5,4,4,0,1,1<span class="line-breaker">
+<font color="red">+</font></span>,0,0&#39;
+                  &#93;
+                &#93;,
+                &#39;8,2,4,0,0,1,3,8,6,0,0,8,1,11,11,0,0,5,6,4,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;,
+              &#91;
+                &#39;ShibaInu&#39;,
+                &#91;&#93;,
+                &#39;7,1,4,0,0,1,3,7,5,0,0,9,1,10,11,1,0,5,5,4,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;
+            &#93;,
+            &#39;8,2,4,0,0,1,3,8,7,0,0,9,1,11,11,1,0,5,6,4,6,0,1,1,0,0&#39;
+          &#93;,
+          &#91;
+            &#39;LhasaApso&#39;,
+            &#91;
+              &#91;
+                &#39;ShibaInu&#39;,
+                &#91;&#93;,
+                &#39;4,1,5,0,0,1,3,7,6,0,1,8,1,11,12,0,0,5,3,4,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;
+            &#93;,
+            &#39;5,2,5,0,0,1,3,8,8,0,1,8,1,12,12,0,0,5,4,4,6,0,1,1,0,0&#39;
+          &#93;,
+          &#91;
+            &#39;Plott&#39;,
+            &#91;
+              &#91;
+                &#39;ShibaInu&#39;,
+                &#91;&#93;,
+                &#39;7,1,5,0,0,1,3,8,6,0,1,8,1,11,12,0,0,5,5,2,5,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;
+            &#93;,
+            &#39;8,2,5,0,0,1,3,9,8,0,1,8,1,12,12,0,0,5,6,2,6,0,1,1,0,0&#39;
+          &#93;,
+          &#91;
+            &#39;Pug&#39;,
+            &#91;
+              &#91;
+                &#39;ShibaInu&#39;,
+                &#91;&#93;,
+                &#39;7,1,5,0,0,1,2,8,6,0,1,9,1,11,13,0,0,5,5,4,4,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;
+            &#93;,
+            &#39;8,2,5,0,0,1,2,9,8,0,1,9,1,12,13,0,0,5,6,4,5,0,1,1,0,0&#39;
+          &#93;,
+          &#91;
+            &#39;Puli&#39;,
+            &#91;
+              &#91;
+                &#39;ShibaInu&#39;,
+                &#91;&#93;,
+                &#39;7,1,5,0,0,1,3,8,5,0,1,8,1,11,13,0,0,5,5,4,4,0,1,1,0,0<span class="line-breaker">
+<font color="red">+</font></span>&#39;
+              &#93;
+            &#93;,
+            &#39;8,2,5,0,0,1,3,9,7,0,1,8,1,12,13,0,0,5,6,4,5,0,1,1,0,0&#39;
+          &#93;,
+          &#91;
+            &#39;ShibaInu&#39;,
+            &#91;&#93;,
+            &#39;7,1,5,0,0,1,3,8,6,0,1,9,1,11,13,1,0,5,5,4,5,0,1,1,0,0&#39;
+          &#93;
+        &#93;;
+
+</tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058337;part=3">&#91;download&#93;</a></div></pre>
+
+
+-->&gt;</div>
+
+</p>
+<div class="pmsig"><div class="pmsig-272364">
+<p>--MidLifeXis</p>
+
+</div></div></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058337;node_id=3333">&#91;reply&#93;</a><br /><a href="?displaytype=displaycode;node_id=1058337">[d/l]</a><br /><a href="?displaytype=selectcode;node_id=1058337">[select]</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058345'></a><ul class='indent'><ul class='indent'><a href="?node_id=1058345">Re^3: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 18:54&nbsp;UTC</span></ul></ul></td></tr>
+<tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><ul class='indent'>Well, I ran your code using my 4 car example and it gave the right solution. I had mixed results with the dogs but it could be an issue on my side. I am running some more tests but I think this may be the path to what I am looking for. 
+
+Thank you for taking the time to put a working script together.</ul></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058345;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058348'></a><ul class='indent'><ul class='indent'><ul class='indent'><a href="?node_id=1058348">Re^4: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=272364">MidLifeXis</a><span class="attribution-title"> (Prior)</span> on Oct 15, 2013 at 19:00&nbsp;UTC</span></ul></ul></ul></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058354'></a><ul class='indent'><ul class='indent'><ul class='indent'><ul class='indent'><a href="?node_id=1058354">Re^5: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 21:11&nbsp;UTC</span></ul></ul></ul></ul></td></tr>
+<tr bgcolor='cccccc'><td colspan='2'><ul class='indent'><ul class='indent'><ul class='indent'><ul class='indent'><ul class='indent'><i>Some notes below your <a href='?node_id=1072'>chosen depth</a> have not been shown here</i></ul></ul></ul></ul></ul></td></tr><tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058329'></a><a href="?node_id=1058329">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=992570">Laurent_R</a><span class="attribution-title"> (Chaplain)</span> on Oct 15, 2013 at 17:20&nbsp;UTC</span></td></tr>
 <tr class='reply-body pmnote-992570' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><p>Maybe you could sort the letters of each word into alphabetic order and use a hash to make the link between sorted words and real words. Then also sort your input letters. I am not sure right now on how to go from there (possibl building a HoH), but I think that "normalizing" the words this way should enable you to do much faster lookup.
 </p>
 </ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058329;node_id=3333">&#91;reply&#93;</a></td></tr>
-<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058331'></a><ul class='indent'><a href="?node_id=1058331">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Novice)</span> on Oct 15, 2013 at 17:28&nbsp;UTC</span></ul></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058331'></a><ul class='indent'><a href="?node_id=1058331">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 17:28&nbsp;UTC</span></ul></td></tr>
 <tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'>I've thought about that. Either sorting the letters in each word into alphabetical order or keeping a total of each letter being used for each word and building a process to compare against the available pool of letters. It is similar to the word based approach but I keep thinking it might be faster. I'm just not sure where to begin that process yet.
 
 Thanks for the reply.</ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058331;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058335'></a><ul class='indent'><ul class='indent'><a href="?node_id=1058335">Re^3: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=992570">Laurent_R</a><span class="attribution-title"> (Chaplain)</span> on Oct 15, 2013 at 17:54&nbsp;UTC</span></ul></ul></td></tr>
+<tr class='reply-body pmnote-992570' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><ul class='indent'><p>I think that the best is to start from your list of words. Let's assume for a moment (to simplify the problem) that each letter can come only once both in the list and in each of the words. Check each word, if it has at least one letter not in your list of letters,remove it from the list. At the end, the words still in the list can all be built with with your list of letters. You don't need to test letter combinations, but just to examine each word once. Having sorted your words and your list makes it fast and easy to check whether the letters of words are all in the list of letters.</p>
+<p>With some letters being there more than once, it is slightly more complicated, but not so much. You only need to check for each word if you have the right amount of each letter in the list.
+</p>
+<p>This can be extremely fast.</p>
+
+<p>EDIT: I had not seen Rolf's post when I posted mine, but it is essentially the same idea.
+</p></ul></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058335;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058333'></a><a href="?node_id=1058333">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=708738">LanX</a><span class="attribution-title"> (Abbot)</span> on Oct 15, 2013 at 17:47&nbsp;UTC</span></td></tr>
+<tr class='reply-body pmnote-708738' bgcolor='ffffff'><td class='reply-body'><ul class='indent'>Why don't you just count the letters???<p><p>
+
+<pre class="code"><div class='codeblock'><tt class='codetext'>my %max =(
+      A=&gt;8, B=&gt;2, C=&gt;5, D=&gt;8, E=&gt;7, F=&gt;1, G=&gt;3, H=&gt;9,
+      I=&gt;8, K=&gt;1, L=&gt;9, M=&gt;1, N=&gt;12, O=&gt;13, P=&gt;1, Q=&gt;0,
+      R=&gt;5, S=&gt;6, T=&gt;4, U=&gt;6, V=&gt;0, W=&gt;1, X=&gt;1, Y=&gt;0, Z=&gt;0);
+my @n = qw(Affenpinscher AfghanHound AiredaleTerrier Akita AlaskanMala<span class="line-breaker">
+<font color="red">+</font></span>mute AmericanEnglishCoonhound AmericanEskimoDog AmericanFoxhound Base<span class="line-breaker">
+<font color="red">+</font></span>nji BassetHound Beagle BeardedCollie Beauceron BlackandTanCoonhound B<span class="line-breaker">
+<font color="red">+</font></span>loodhound BluetickCoonhound BorderCollie BorderTerrier Borzoi BostonT<span class="line-breaker">
+<font color="red">+</font></span>errier BouvierdesFlandres Boxer BoykinSpaniel Briard Brittany Brussel<span class="line-breaker">
+<font color="red">+</font></span>sGriffon BullTerrier Bulldog Bullmastiff ChesapeakeBayRetriever Chihu<span class="line-breaker">
+<font color="red">+</font></span>ahua ChineseCrested ChineseShar-Pei Chinook ChowChow ClumberSpaniel C<span class="line-breaker">
+<font color="red">+</font></span>ockerSpaniel Collie Curly-CoatedRetriever Dachshund Dalmatian DandieD<span class="line-breaker">
+<font color="red">+</font></span>inmontTerrier DobermanPinscher DoguedeBordeaux EnglishCockerSpaniel E<span class="line-breaker">
+<font color="red">+</font></span>nglishFoxhound EnglishSetter EnglishSpringerSpaniel GermanPinscher Ge<span class="line-breaker">
+<font color="red">+</font></span>rmanShepherdDog GermanShorthairedPointer GermanWirehairedPointer Gian<span class="line-breaker">
+<font color="red">+</font></span>tSchnauzer GlenofImaalTerrier GoldenRetriever GordonSetter GreatDane <span class="line-breaker">
+<font color="red">+</font></span>Greyhound Harrier IbizanHound IcelandicSheepdog IrishSetter IrishTerr<span class="line-breaker">
+<font color="red">+</font></span>ier Kuvasz LabradorRetriever LakelandTerrier LhasaApso Lowchen Maltes<span class="line-breaker">
+<font color="red">+</font></span>e ManchesterTerrier Mastiff MiniatureBullTerrier MiniaturePinscher Mi<span class="line-breaker">
+<font color="red">+</font></span>niatureSchnauzer NeapolitanMastiff Newfoundland NorfolkTerrier Peking<span class="line-breaker">
+<font color="red">+</font></span>ese PembrokeWelshCorgi PharaohHound Plott PortugueseWaterDog Pug Puli<span class="line-breaker">
+<font color="red">+</font></span> PyreneanShepherd RatTerrier ShibaInu ShihTzu SiberianHusky SilkyTerr<span class="line-breaker">
+<font color="red">+</font></span>ier SkyeTerrier SmoothFoxTerrier SoftCoatedWheatenTerrier SpinoneItal<span class="line-breaker">
+<font color="red">+</font></span>iano St.Bernard StaffordshireBullTerrier WireFoxTerrier WirehairedPoi<span class="line-breaker">
+<font color="red">+</font></span>ntingGriffon Xoloitzcuintli YorkshireTerrier);
+  
+WORD:
+for my $word (@n) {
+  my %count=%max;
+  for $c ( split //, uc($word) ) {
+    next WORD if $count{$c}-- &lt;=0;
+  }
+  print &quot;$word\n&quot;;
+}
+</tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058333;part=1">&#91;download&#93;</a></div></pre>
+<p><p>
+
+output:
+<div class='readmore-link'><a href="?node_id=1058333">Read more...</a><span class='readmore-size'> (1115 Bytes)</span></div>
+<!-- Node text goes above. Div tags should contain sig only -->
+<div class="pmsig"><div class="pmsig-708738">
+<p>Cheers Rolf
+<p> <small>( addicted to the Perl Programming Language) </small>
+</div></div><p><p>
+
+<h5> update<p></h5><p>
+
+If characters like dash or dot are allowed prepend  <tt class='inlinecode'>grep {/&#91;A-Z&#93;/}</tt> to the for condition, e.g "St.Bernard" will be included too.</ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058333;node_id=3333">&#91;reply&#93;</a><br /><a href="?displaytype=displaycode;node_id=1058333">[d/l]</a><br /><a href="?displaytype=selectcode;node_id=1058333">[select]</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058338'></a><ul class='indent'><a href="?node_id=1058338">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 18:20&nbsp;UTC</span></ul></td></tr>
+<tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'>I am very intrigued by this approach and will explore it a bit more. I should end up with a list of the "10" words that use all of the available letters. Also, I checked the resulting output and it doesn't include "Xolitzcuintli" but that's because I forgot to include 1 "Z". It does appear in the output when I set Z to 1. 
+
+This does leave me with a much smaller list but I would still have to identify the 10 words out of the 72 that create the solution.</ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058338;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058339'></a><ul class='indent'><ul class='indent'><a href="?node_id=1058339">Re^3: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=708738">LanX</a><span class="attribution-title"> (Abbot)</span> on Oct 15, 2013 at 18:23&nbsp;UTC</span></ul></ul></td></tr>
+<tr class='reply-body pmnote-708738' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><ul class='indent'><i>&gt; that use all of the available letters</i><p><p>
+
+please be precise, AUDI has only one D in the example given.<p><p>
+
+changing my code to show only exact matches is no problem, just check at the end if all values are 0.<p><p>
+
+ <!-- Node text goes above. Div tags should contain sig only -->
+<div class="pmsig"><div class="pmsig-708738">
+<p>Cheers Rolf
+<p> <small>( addicted to the Perl Programming Language) </small>
+</div></div></ul></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058339;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058340'></a><ul class='indent'><ul class='indent'><ul class='indent'><a href="?node_id=1058340">Re^4: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 18:27&nbsp;UTC</span></ul></ul></ul></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058341'></a><ul class='indent'><ul class='indent'><ul class='indent'><ul class='indent'><a href="?node_id=1058341">Re^5: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=708738">LanX</a><span class="attribution-title"> (Abbot)</span> on Oct 15, 2013 at 18:30&nbsp;UTC</span></ul></ul></ul></ul></td></tr>
+<tr bgcolor='cccccc'><td colspan='2'><ul class='indent'><ul class='indent'><ul class='indent'><ul class='indent'><ul class='indent'><i>Some notes below your <a href='?node_id=1072'>chosen depth</a> have not been shown here</i></ul></ul></ul></ul></ul></td></tr><tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058334'></a><a href="?node_id=1058334">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=763520">ramlight</a><span class="attribution-title"> (Pilgrim)</span> on Oct 15, 2013 at 17:52&nbsp;UTC</span></td></tr>
+<tr class='reply-body pmnote-763520' bgcolor='ffffff'><td class='reply-body'><ul class='indent'>I was doing something similar for a game that I was fooling around with at home.  I wanted to find all of the possible 3-7 letter English words that could be made up from letters in a single 7-letter word. The algorithm that I used was:</p>
+<ul>
+<li>get all possible permutations of letters</li>
+<li>eliminate duplicates</li>
+<li>look up each possible word in the dictionary to see if it was a real word</li>
+</ul>
+The key to efficient searches was to keep the list in alphabetic order, make a rough guess at the starting point (based on the first letter of the word), and perform a binary search to locate the word.
+
+</ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058334;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058344'></a><a href="?node_id=1058344">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=1021810">hdb</a><span class="attribution-title"> (Vicar)</span> on Oct 15, 2013 at 18:50&nbsp;UTC</span></td></tr>
+<tr class='reply-body pmnote-1021810' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><p>
+If I am not mistaken, you only have 111 letters, not 112.  Is this just some counting mistake on your side, or could this spoil the solution?
+</p>
+</ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058344;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058346'></a><ul class='indent'><a href="?node_id=1058346">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 18:56&nbsp;UTC</span></ul></td></tr>
+<tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'>You are correct. I forgot to put a Z(1). </ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058346;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058347'></a><ul class='indent'><ul class='indent'><a href="?node_id=1058347">Re^3: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 18:57&nbsp;UTC</span></ul></ul></td></tr>
+<tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><ul class='indent'>I just updated the description to reflect the change. Thank you.</ul></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058347;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058350'></a><a href="?node_id=1058350">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=708738">LanX</a><span class="attribution-title"> (Abbot)</span> on Oct 15, 2013 at 20:06&nbsp;UTC</span></td></tr>
+<tr class='reply-body pmnote-708738' bgcolor='ffffff'><td class='reply-body'><ul class='indent'>this primitive branch-and-bound will eventually spit out a solution but it might take days.<p><p>
+
+
+<pre class="code"><div class='codeblock'><tt class='codetext'>use strict;
+use warnings;
+
+use Data::Dump qw/pp/;
+use feature qw/say/;
+
+
+my %max =(
+      A=&gt;8, B=&gt;2, C=&gt;5, D=&gt;8, E=&gt;7, F=&gt;1, G=&gt;3, H=&gt;9,
+      I=&gt;8, K=&gt;1, L=&gt;9, M=&gt;1, N=&gt;12, O=&gt;13, P=&gt;1, Q=&gt;0,
+      R=&gt;5, S=&gt;6, T=&gt;4, U=&gt;6, V=&gt;0, W=&gt;1, X=&gt;1, Y=&gt;0, Z=&gt;1);
+my @n = qw(Affenpinscher AfghanHound AiredaleTerrier Akita AlaskanMala<span class="line-breaker">
+<font color="red">+</font></span>mute AmericanEnglishCoonhound AmericanEskimoDog AmericanFoxhound Base<span class="line-breaker">
+<font color="red">+</font></span>nji BassetHound Beagle BeardedCollie Beauceron BlackandTanCoonhound B<span class="line-breaker">
+<font color="red">+</font></span>loodhound BluetickCoonhound BorderCollie BorderTerrier Borzoi BostonT<span class="line-breaker">
+<font color="red">+</font></span>errier BouvierdesFlandres Boxer BoykinSpaniel Briard Brittany Brussel<span class="line-breaker">
+<font color="red">+</font></span>sGriffon BullTerrier Bulldog Bullmastiff ChesapeakeBayRetriever Chihu<span class="line-breaker">
+<font color="red">+</font></span>ahua ChineseCrested ChineseShar-Pei Chinook ChowChow ClumberSpaniel C<span class="line-breaker">
+<font color="red">+</font></span>ockerSpaniel Collie Curly-CoatedRetriever Dachshund Dalmatian DandieD<span class="line-breaker">
+<font color="red">+</font></span>inmontTerrier DobermanPinscher DoguedeBordeaux EnglishCockerSpaniel E<span class="line-breaker">
+<font color="red">+</font></span>nglishFoxhound EnglishSetter EnglishSpringerSpaniel GermanPinscher Ge<span class="line-breaker">
+<font color="red">+</font></span>rmanShepherdDog GermanShorthairedPointer GermanWirehairedPointer Gian<span class="line-breaker">
+<font color="red">+</font></span>tSchnauzer GlenofImaalTerrier GoldenRetriever GordonSetter GreatDane <span class="line-breaker">
+<font color="red">+</font></span>Greyhound Harrier IbizanHound IcelandicSheepdog IrishSetter IrishTerr<span class="line-breaker">
+<font color="red">+</font></span>ier Kuvasz LabradorRetriever LakelandTerrier LhasaApso Lowchen Maltes<span class="line-breaker">
+<font color="red">+</font></span>e ManchesterTerrier Mastiff MiniatureBullTerrier MiniaturePinscher Mi<span class="line-breaker">
+<font color="red">+</font></span>niatureSchnauzer NeapolitanMastiff Newfoundland NorfolkTerrier Peking<span class="line-breaker">
+<font color="red">+</font></span>ese PembrokeWelshCorgi PharaohHound Plott PortugueseWaterDog Pug Puli<span class="line-breaker">
+<font color="red">+</font></span> PyreneanShepherd RatTerrier ShibaInu ShihTzu SiberianHusky SilkyTerr<span class="line-breaker">
+<font color="red">+</font></span>ier SkyeTerrier SmoothFoxTerrier SoftCoatedWheatenTerrier SpinoneItal<span class="line-breaker">
+<font color="red">+</font></span>iano St.Bernard StaffordshireBullTerrier WireFoxTerrier WirehairedPoi<span class="line-breaker">
+<font color="red">+</font></span>ntingGriffon Xoloitzcuintli YorkshireTerrier);
+
+#%max=( A=&gt;1,D=&gt;2,F=&gt;1,I=&gt;1,O=&gt;1,R=&gt;1,U=&gt;1);
+#@n = qw/ HONDA TOYOTA AUDI FORD/;
+
+
+my @path;
+our $level=0;
+
+sub rec {
+  my ($idx0,%max) = @_;
+  #pp $idx0,\%count;
+  local $level=$level+1;
+  
+ WORD:
+  for (my $idx = $idx0; $idx &lt;@n; $idx++){
+    #say &quot;*** &quot;,
+    my $word = $n&#91;$idx&#93;;
+    my %count=%max;
+#    say &quot; &quot; x $level ,$word;
+    for my $char ( grep {/&#91;A-Z&#93;/} split //, uc($word) ) {
+      next WORD if $count{$char}-- &lt;=0;
+    }
+
+    push @path, $word;
+    unless (grep { $_ != 0 } values %count ) {
+      print &quot;RESULT: &quot;, join &quot;,&quot;,@path,&quot;\n&quot;;
+#      return;
+      goto STOP;
+    }
+    
+    rec($idx+1,%count);
+    pop @path;
+  }
+}
+
+rec(0,%max);
+STOP:
+</tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058350;part=1">&#91;download&#93;</a></div></pre>
+<p><p>
+
+a smarter approach would be to count the letters for each word in an initialization phase and to sort them according to exotic letters.<p><p>
+
+for instance if Z is 0 there is no point to check words with a Z in the following branch.<p><p>
+
+So start to find all allowed combinations for the most rare letter and continuing with the next rare one should greatly improve runtime.<p><p>
+
+Unfortunately I have no time to fiddle with entertainment problems, I hope my input helps! =)<p><p>
+
+
+<!-- Node text goes above. Div tags should contain sig only -->
+<div class="pmsig"><div class="pmsig-708738">
+<p>Cheers Rolf
+<p> <small>( addicted to the Perl Programming Language) </small>
+</div></div></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058350;node_id=3333">&#91;reply&#93;</a><br /><a href="?displaytype=displaycode;node_id=1058350">[d/l]</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058358'></a><ul class='indent'><a href="?node_id=1058358">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 21:36&nbsp;UTC</span></ul></td></tr>
+<tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'>I do appreciate your input. I am learning a lot by going through the options presented here. Thank you.</ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058358;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058351'></a><a href="?node_id=1058351">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=1021810">hdb</a><span class="attribution-title"> (Vicar)</span> on Oct 15, 2013 at 20:15&nbsp;UTC</span></td></tr>
+<tr class='reply-body pmnote-1021810' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><p>
+Here is a backtracking method which works on sorted data, dogs with rare letters first.  (Similar to <a href="?node=LanX">LanX</a>'s <a href="?node_id=1058350">proposal</a>.)
+</p>
+
+<pre class="code"><div class='codeblock'><tt class='codetext'>use strict;
+use warnings;
+use Data::Dumper;
+
+sub score {
+  my ($dog, $letters) = @_;
+  my $sum = 0;
+  $sum += $$letters{$_}//0 for grep {/\w/} split //, $dog;
+  return $sum/length($dog);
+}
+
+my @n = qw(Affenpinscher AfghanHound AiredaleTerrier Akita AlaskanMala<span class="line-breaker">
+<font color="red">+</font></span>mute AmericanEnglishCoonhound AmericanEskimoDog AmericanFoxhound Base<span class="line-breaker">
+<font color="red">+</font></span>nji BassetHound Beagle BeardedCollie Beauceron BlackandTanCoonhound B<span class="line-breaker">
+<font color="red">+</font></span>loodhound BluetickCoonhound BorderCollie BorderTerrier Borzoi BostonT<span class="line-breaker">
+<font color="red">+</font></span>errier BouvierdesFlandres Boxer BoykinSpaniel Briard Brittany Brussel<span class="line-breaker">
+<font color="red">+</font></span>sGriffon BullTerrier Bulldog Bullmastiff ChesapeakeBayRetriever Chihu<span class="line-breaker">
+<font color="red">+</font></span>ahua ChineseCrested ChineseShar-Pei Chinook ChowChow ClumberSpaniel C<span class="line-breaker">
+<font color="red">+</font></span>ockerSpaniel Collie Curly-CoatedRetriever Dachshund Dalmatian DandieD<span class="line-breaker">
+<font color="red">+</font></span>inmontTerrier DobermanPinscher DoguedeBordeaux EnglishCockerSpaniel E<span class="line-breaker">
+<font color="red">+</font></span>nglishFoxhound EnglishSetter EnglishSpringerSpaniel GermanPinscher Ge<span class="line-breaker">
+<font color="red">+</font></span>rmanShepherdDog GermanShorthairedPointer GermanWirehairedPointer Gian<span class="line-breaker">
+<font color="red">+</font></span>tSchnauzer GlenofImaalTerrier GoldenRetriever GordonSetter GreatDane <span class="line-breaker">
+<font color="red">+</font></span>Greyhound Harrier IbizanHound IcelandicSheepdog IrishSetter IrishTerr<span class="line-breaker">
+<font color="red">+</font></span>ier Kuvasz LabradorRetriever LakelandTerrier LhasaApso Lowchen Maltes<span class="line-breaker">
+<font color="red">+</font></span>e ManchesterTerrier Mastiff MiniatureBullTerrier MiniaturePinscher Mi<span class="line-breaker">
+<font color="red">+</font></span>niatureSchnauzer NeapolitanMastiff Newfoundland NorfolkTerrier Peking<span class="line-breaker">
+<font color="red">+</font></span>ese PembrokeWelshCorgi PharaohHound Plott PortugueseWaterDog Pug Puli<span class="line-breaker">
+<font color="red">+</font></span> PyreneanShepherd RatTerrier ShibaInu ShihTzu SiberianHusky SilkyTerr<span class="line-breaker">
+<font color="red">+</font></span>ier SkyeTerrier SmoothFoxTerrier SoftCoatedWheatenTerrier SpinoneItal<span class="line-breaker">
+<font color="red">+</font></span>iano St.Bernard StaffordshireBullTerrier WireFoxTerrier WirehairedPoi<span class="line-breaker">
+<font color="red">+</font></span>ntingGriffon Xoloitzcuintli YorkshireTerrier);
+
+my $letters = &quot;A(8),B(2),C(5),D(8),E(7),F(1),G(3),H(9),I(8),K(1),L(9),<span class="line-breaker">
+<font color="red">+</font></span>M(1),N(12),O(13),P(1),Q(0),R(5),S(6),T(4),U(6),V(0),W(1),X(1),Y(0),Z(<span class="line-breaker">
+<font color="red">+</font></span>1)&quot;;
+my %letters = map { /(\w)\((\d+)\)/; { $1 =&gt; $2 } } split /,/, $letter<span class="line-breaker">
+<font color="red">+</font></span>s;
+@n = map { $_-&gt;&#91;0&#93; } sort { $a-&gt;&#91;1&#93; &lt;=&gt; $b-&gt;&#91;1&#93; } map { &#91; $_, score( $<span class="line-breaker">
+<font color="red">+</font></span>_, \%letters ) &#93; } @n;
+$letters = join &#39;&#39;, sort { length $a &lt;=&gt; length $b } map { /(\w)\((\d+<span class="line-breaker">
+<font color="red">+</font></span>)\)/; $2?$1 x $2:&#39;&#39; } split /,/, $letters;
+
+sub dogtree {
+  my ( $level, $tree, $letters, @dogs ) = @_;
+  print &quot;$tree\n&quot; and exit unless $letters;
+ DOG: while( my $dog = shift @dogs) {
+    my $remaining = $letters;
+    $remaining =~ s/$_//i or next DOG for grep { /\w/ } split //, $dog<span class="line-breaker">
+<font color="red">+</font></span>;
+    dogtree( $level+1, &quot;$tree $dog&quot;, $remaining, @dogs );
+  }
+}
+
+dogtree 0, &#39;&#39;, $letters, @n;
+</tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058351;part=1">&#91;download&#93;</a></div></pre>
+
+
+<p>Takes 14 seconds on my machine to find one solution.</p></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058351;node_id=3333">&#91;reply&#93;</a><br /><a href="?displaytype=displaycode;node_id=1058351">[d/l]</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058357'></a><ul class='indent'><a href="?node_id=1058357">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=928858">sarchasm</a><span class="attribution-title"> (Acolyte)</span> on Oct 15, 2013 at 21:34&nbsp;UTC</span></ul></td></tr>
+<tr class='reply-body pmnote-928858' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'>That works very well and it's pretty quick too. I just started running it with a much bigger set of data so I will see what happens.
+
+Thank you!</ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058357;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058362'></a><ul class='indent'><ul class='indent'><a href="?node_id=1058362">Re^3: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=1057415">oiskuu</a><span class="attribution-title"> (Initiate)</span> on Oct 15, 2013 at 22:13&nbsp;UTC</span></ul></ul></td></tr>
+<tr class='reply-body pmnote-1057415' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><ul class='indent'>This looks like a multiple-constrained <a href="http://en.wikipedia.org/wiki/Special:Search?search=Knapsack%20problem">Knapsack problem</a>. All bets are off...</ul></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058362;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058396'></a><ul class='indent'><ul class='indent'><a href="?node_id=1058396">Re^3: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=1021810">hdb</a><span class="attribution-title"> (Vicar)</span> on Oct 16, 2013 at 06:57&nbsp;UTC</span></ul></ul></td></tr>
+<tr class='reply-body pmnote-1021810' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><ul class='indent'><p>
+A bit more experimentation with sorting and scoring functions has (sadly) lead me to the conclusion that the fast performance of my posted code is more of an accident rather than due to a great algorithm, i.e. it works very well for this data set but not necessarily on others.  So be careful before you bet too much on it...
+</p>
+</ul></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058396;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058409'></a><a href="?node_id=1058409">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=1055200">Lennotoecom</a><span class="attribution-title"> (Sexton)</span> on Oct 16, 2013 at 08:58&nbsp;UTC</span></td></tr>
+<tr class='reply-body pmnote-1055200' bgcolor='ffffff'><td class='reply-body'><ul class='indent'>fail working fast only with 2 - 4 mixed words</ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058409;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058426'></a><a href="?node_id=1058426">Re: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=806480">Neighbour</a><span class="attribution-title"> (Friar)</span> on Oct 16, 2013 at 11:20&nbsp;UTC</span></td></tr>
+<tr class='reply-body pmnote-806480' bgcolor='ffffff'><td class='reply-body'><ul class='indent'>How many solutions are there for the dog names? Right now, my program yields the following:
+<pre class="code"><div class='codeblock'><tt class='codetext'>&#91;38648&#93; solutions found
+real    3m36.816s
+user    3m28.169s
+sys     0m2.624s
+</tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058426;part=1">&#91;download&#93;</a></div></pre>
+
+
+</ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058426;node_id=3333">&#91;reply&#93;</a><br /><a href="?displaytype=displaycode;node_id=1058426">[d/l]</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058427'></a><ul class='indent'><a href="?node_id=1058427">Re^2: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=1021810">hdb</a><span class="attribution-title"> (Vicar)</span> on Oct 16, 2013 at 11:34&nbsp;UTC</span></ul></td></tr>
+<tr class='reply-body pmnote-1021810' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><p>
+As my code only found one, would you be so kind to publish two of yours.
+</p>
+</ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058427;node_id=3333">&#91;reply&#93;</a></td></tr>
+<tr class='reply' bgcolor='#eeeeee'><td  colspan='2'><a name='1058431'></a><ul class='indent'><ul class='indent'><a href="?node_id=1058431">Re^3: Another word puzzle with too many permutations</a><br /><span class="attribution"> by <a href="?node_id=806480">Neighbour</a><span class="attribution-title"> (Friar)</span> on Oct 16, 2013 at 12:02&nbsp;UTC</span></ul></ul></td></tr>
+<tr class='reply-body pmnote-806480' bgcolor='ffffff'><td class='reply-body'><ul class='indent'><ul class='indent'><ul class='indent'>Sure. I'm guessing that I might have some doubles in my solution set, but I'm still working on that (and also trying to get the speed up a little).
+
+<div class='spoil_link'>&lt;<a href="?showspoiler=1058431-1;node_id=1058322">Reveal this spoiler</a> or all <a href="?node_id=1058322;spoil=1">in this thread</a><!--
+
+<pre class="code"><div class='codeblock'><tt class='codetext'>&#91;
+  &quot;LakelandTerrier&quot;,
+  &quot;LhasaApso&quot;,
+  &quot;Bulldog&quot;,
+  &quot;Bloodhound&quot;,
+  &quot;Dachshund&quot;,
+  &quot;Collie&quot;,
+  &quot;ShihTzu&quot;,
+  &quot;Lowchen&quot;,
+  &quot;GordonSetter&quot;,
+  &quot;AfghanHound&quot;,
+&#93;
+Used alfabet: {
+  A =&gt; 8,  B =&gt; 2,  C =&gt; 3,  D =&gt; 8,  E =&gt; 7,  F =&gt; 1,
+  G =&gt; 3,  H =&gt; 9,  I =&gt; 3,  K =&gt; 1,  L =&gt; 9,  N =&gt; 7,
+  O =&gt; 10,  P =&gt; 1,  R =&gt; 5,  S =&gt; 5,  T =&gt; 4,  U =&gt; 5,
+  W =&gt; 1,  Z =&gt; 1,
+}
+&#91;
+  &quot;LakelandTerrier&quot;,
+  &quot;Maltese&quot;,
+  &quot;Bulldog&quot;,
+  &quot;ShibaInu&quot;,
+  &quot;Dachshund&quot;,
+  &quot;Collie&quot;,
+  &quot;ShihTzu&quot;,
+  &quot;Lowchen&quot;,
+  &quot;Puli&quot;,
+  &quot;AfghanHound&quot;,
+&#93;
+Used alfabet: {
+  A =&gt; 7,  B =&gt; 2,  C =&gt; 3,  D =&gt; 5,  E =&gt; 7,  F =&gt; 1,
+  G =&gt; 2,  H =&gt; 8,  I =&gt; 6,  K =&gt; 1,  L =&gt; 9,  M =&gt; 1,
+  N =&gt; 6,  O =&gt; 4,  P =&gt; 1,  R =&gt; 3,  S =&gt; 4,  T =&gt; 3,
+  U =&gt; 6,  W =&gt; 1,  Z =&gt; 1,
+}
+</tt></div><div class='embed-code-dl'><a href="?abspart=1;displaytype=displaycode;node_id=1058431;part=1">&#91;download&#93;</a></div></pre>
+
+
+-->&gt;</div></ul></ul></ul></td><td class='reply-body adjunct-links' align='left' valign='bottom'><a href="?parent=1058431;node_id=3333">&#91;reply&#93;</a><br /><a href="?displaytype=displaycode;node_id=1058431">[d/l]</a></td></tr>
 </table></center>
 </div>
 
@@ -316,10 +1130,7 @@ Password:</td><td>
       <tr><td class="nodelet_body">
 
 <form method="get" action="?" enctype="multipart/form-data">
-<div style="display:none"><input type="hidden" name="node_id" value="1058322"  /></div><table class="cb_table" border="0" width="100%" cellspacing="0" cellpadding="2">
-
-<tr class="cb_msg"><td class="odd-row"><span class="chat"><span class="chatfrom_826783"><span class='cb_sq_br'>&#91;</span><span class='cb_author'><a href="?node_id=826783" title="Posted :29:34 (0:04 ago)">jedikaiti</a></span><span class='cb_sq_br'>&#93;</span><span class='cb_sep'>:</span> <span class='content'>mmmm cookies</span></span></span></td></tr>
-</table>
+<div style="display:none"><input type="hidden" name="node_id" value="1058322"  /></div><i class="cb_quiet">and all is quiet...</i><br />
 <input type="submit" name="foo" value="Refresh" />
 </form>
 <i><br /> <a href="?node=ChatterBox%20FAQ">How do I use this?</a>  |  <a href="?node_id=20842">Other CB clients</a></i>
@@ -335,18 +1146,15 @@ Password:</td><td>
       </th></tr>
       <tr><td class="nodelet_body">
 
-<span class="other-users-text">Others <span class="other-users-blurb">avoiding work at</span> the Monastery:</span> (11)<br /><ul class="spacey-list"><li><span class='even-row'><span class='item-000'><span class='user-level-24'><span class='user-461912'><a href="?node_id=461912" title="GrandFather's home node. Level 24. Member of: janitors, pmdev">GrandFather</a></span></span></span></span></li>
-<li><span class='odd-row'><span class='item-001'><span class='user-level-19'><span class='user-636534'><a href="?node_id=636534" title="Perlbotics's home node. Level 19">Perlbotics</a></span></span></span></span></li>
+<span class="other-users-text">Others <span class="other-users-blurb">taking refuge in</span> the Monastery:</span> (8)<br /><ul class="spacey-list"><li><span class='even-row'><span class='item-000'><span class='user-level-24'><span class='user-461912'><a href="?node_id=461912" title="GrandFather's home node. Level 24. Member of: janitors, pmdev">GrandFather</a></span></span></span></span></li>
+<li><span class='odd-row'><span class='item-001'><span class='user-level-19'><span class='user-195718'><a href="?node_id=195718" title="hardburn's home node. Level 19">hardburn</a></span></span></span></span></li>
 <li><span class='even-row'><span class='item-002'><span class='user-level-18'><span class='user-70929'><a href="?node_id=70929" title="atcroft's home node. Level 18">atcroft</a></span></span></span></span></li>
-<li><span class='odd-row'><span class='item-003'><span class='user-level-18'><span class='user-861371'><a href="?node_id=861371" title="kcott's home node. Level 18">kcott</a></span></span></span></span></li>
-<li><span class='even-row'><span class='item-004'><span class='user-level-17'><span class='user-272364'><a href="?node_id=272364" title="MidLifeXis's home node. Level 17. Member of: power users">MidLifeXis</a></span></span></span></span></li>
-<li><span class='odd-row'><span class='item-005'><span class='user-level-11'><span class='user-992570'><a href="?node_id=992570" title="Laurent_R's home node. Level 11">Laurent_R</a></span></span></span></span></li>
-<li><span class='even-row'><span class='item-006'><span class='user-level-10'><span class='user-119480'><a href="?node_id=119480" title="Voronich's home node. Level 10">Voronich</a></span></span></span></span></li>
-<li><span class='odd-row'><span class='item-007'><span class='user-level-8'><span class='user-1021995'><a href="?node_id=1021995" title="rnewsham's home node. Level 8">rnewsham</a></span></span></span></span></li>
-<li><span class='even-row'><span class='item-008'><span class='user-level-6'><span class='user-554517'><a href="?node_id=554517" title="jellisii2's home node. Level 6">jellisii2</a></span></span></span></span></li>
-<li><span class='odd-row'><span class='item-009'><span class='user-level-3'><span class='user-909432'><a href="?node_id=909432" title="jagan_1234's home node. Level 3">jagan_1234</a></span></span></span></span></li>
-<li><span class='even-row'><span class='item-010'><span class='user-level-2'><span class='user-928858'><a href="?node_id=928858" title="sarchasm's home node. Level 2">sarchasm</a></span></span></span></span></li>
-</ul><span class='update-time'><small>As of 2013-10-15 17:28 GMT</small></span>
+<li><span class='odd-row'><span class='item-003'><span class='user-level-17'><span class='user-272364'><a href="?node_id=272364" title="MidLifeXis's home node. Level 17. Member of: power users">MidLifeXis</a></span></span></span></span></li>
+<li><span class='even-row'><span class='item-004'><span class='user-level-16'><span class='user-968231'><a href="?node_id=968231" title="Athanasius's home node. Level 16">Athanasius</a></span></span></span></span></li>
+<li><span class='odd-row'><span class='item-005'><span class='user-level-10'><span class='user-119480'><a href="?node_id=119480" title="Voronich's home node. Level 10">Voronich</a></span></span></span></span></li>
+<li><span class='even-row'><span class='item-006'><span class='user-level-8'><span class='user-567887'><a href="?node_id=567887" title="perlsyntax's home node. Level 8">perlsyntax</a></span></span></span></span></li>
+<li><span class='odd-row'><span class='item-007'><span class='user-level-4'><span class='user-972721'><a href="?node_id=972721" title="three18ti's home node. Level 4">three18ti</a></span></span></span></span></li>
+</ul><span class='update-time'><small>As of 2013-10-16 12:07 GMT</small></span>
 
       </td></tr>
 
@@ -478,7 +1286,7 @@ Password:</td><td>
 </form>
 
 <p>
-<a href="?node_id=1056469">Results (724 votes)</a>, 
+<a href="?node_id=1056469">Results (760 votes)</a>, 
 <a href="?node=past%20polls">past polls</a></p>
       </td></tr>
 
@@ -501,10 +1309,10 @@ Password:</td><td>
 <br />
 
 <div id="footer">
-          PerlMonks parthenogenetically spawned by <a href="?node=vroom">Tim Vroom</a>.<br/>
-      PerlMonks is a proud member of the
+          PerlMonks lovingly hand-crafted by <a href="?node=vroom">Tim Vroom</a>.<br/>
+      PerlMonks was recently assimilated by
       <a href="http://www.perlfoundation.org">The Perl Foundation</a>.<br />
-      Beefy Boxes and Bandwidth Generously Provided by
+      Speedy Servers and Bandwidth Generously Provided by
       <a href="http://promote.pair.com/direct.pl?perlmonks.org">
       pair Networks</a>
 
