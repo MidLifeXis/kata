@@ -49,7 +49,7 @@ sub get_reduced_alphabet {
 
     my @letters   = (0) x 26;
     
-    for ( split '', uc($choice) ) {
+    for ( grep { $_ =~ /[A-Z]/ } split '', uc($choice) ) {
 	$letters[ ord($_) - ord( 'A' ) ]++;
     }
 
